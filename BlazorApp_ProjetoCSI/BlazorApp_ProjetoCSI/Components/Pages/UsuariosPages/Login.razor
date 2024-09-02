@@ -1,0 +1,66 @@
+﻿@page "/usuarios/login"
+
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_ProjetoCSI.Models
+@using BlazorApp_ProjetoCSI.Services
+@inject IDbContextFactory<BlazorApp_ProjetoCSI.Data.MyBlazorApp_ProjetoCSIContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject UserService UserService
+
+<PageTitle>Login</PageTitle>
+
+<h1>Login</h1>
+
+<h4>Usuarios</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="Usuarios" OnValidSubmit="HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="login" class="form-label">Login:</label>
+                <InputText id="login" @bind-Value="Usuarios.Login" class="form-control" />
+                <ValidationMessage For="() => Usuarios.Login" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="senha" class="form-label">Senha:</label>
+                <InputText id="senha" @bind-Value="Usuarios.Senha" type="password" class="form-control" />
+                <ValidationMessage For="() => Usuarios.Senha" class="text-danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Login</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/usuarios">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public Usuarios Usuarios { get; set; } = new();
+
+    public async Task HandleLogin()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        // Verificar se o login e a senha são válidos
+        var user = await context.Usuarios
+            .FirstOrDefaultAsync(u => u.Login == Usuarios.Login && u.Senha == Usuarios.Senha);
+
+        if (user != null)
+        {
+            // Atualiza o nome do usuário no serviço
+            UserService.SetUserName(user.Login);
+
+            // Usar JavaScript para forçar o refresh da página
+            await JSRuntime.InvokeVoidAsync("eval", "location.reload();");
+        }
+        else
+        {
+            // Exibir mensagem de erro se necessário
+        }
+    }
+}

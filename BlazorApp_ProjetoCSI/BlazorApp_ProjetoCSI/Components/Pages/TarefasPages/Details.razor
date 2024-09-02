@@ -1,0 +1,55 @@
+﻿@page "/tarefas/details"
+
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_ProjetoCSI.Models
+@inject IDbContextFactory<BlazorApp_ProjetoCSI.Data.MyBlazorApp_ProjetoCSIContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Tarefas</h4>
+    <hr />
+    @if (tarefas is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Descricao</dt>
+            <dd class="col-sm-10">@tarefas.Descricao</dd>
+            <dt class="col-sm-2">Prioridade</dt>
+            <dd class="col-sm-10">@tarefas.Prioridade</dd>
+            <dt class="col-sm-2">Responsavel</dt>
+            <dd class="col-sm-10">@tarefas.Responsavel</dd>
+            <dt class="col-sm-2">DataCriacao</dt>
+            <dd class="col-sm-10">@tarefas.DataCriacao</dd>
+            <dt class="col-sm-2">Prazo</dt>
+            <dd class="col-sm-10">@tarefas.Prazo</dd>
+        </dl>
+        <div>
+            <a href="@($"/tarefas/edit?id={tarefas.ID}")">Edit</a> |
+            <a href="@($"/tarefas")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    Tarefas? tarefas;
+
+    [SupplyParameterFromQuery]
+    public int ID { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        tarefas = await context.Tarefas.FirstOrDefaultAsync(m => m.ID == ID);
+
+        if (tarefas is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

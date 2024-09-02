@@ -1,0 +1,110 @@
+﻿@page "/Tarefas/edit"
+
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_ProjetoCSI.Models
+@inject IDbContextFactory<BlazorApp_ProjetoCSI.Data.MyBlazorApp_ProjetoCSIContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h4>Tarefas</h4>
+<hr />
+@if (Tarefas is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="Tarefas" OnValidSubmit="UpdateTarefas" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Tarefas.ID" value="@Tarefas.ID" />
+                <div class="mb-3">
+                    <label for="descricao" class="form-label">Descricao:</label>
+                    <InputText id="descricao" @bind-Value="Tarefas.Descricao" class="form-control" />
+                    <ValidationMessage For="() => Tarefas.Descricao" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="prioridade" class="form-label">Prioridade:</label>
+                    <InputText id="prioridade" @bind-Value="Tarefas.Prioridade" class="form-control" />
+                    <ValidationMessage For="() => Tarefas.Prioridade" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="responsavel" class="form-label">Responsavel:</label>
+                    <InputText id="responsavel" @bind-Value="Tarefas.Responsavel" class="form-control" />
+                    <ValidationMessage For="() => Tarefas.Responsavel" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="datacriacao" class="form-label">DataCriacao:</label>
+                    <InputDate id="datacriacao" @bind-Value="Tarefas.DataCriacao" class="form-control" />
+                    <ValidationMessage For="() => Tarefas.DataCriacao" class="text-danger" />
+                </div>
+                <div class="mb-3">
+                    <label for="prazo" class="form-label">Prazo:</label>
+                    <InputDate id="prazo" @bind-Value="Tarefas.Prazo" class="form-control" />
+                    <ValidationMessage For="() => Tarefas.Prazo" class="text-danger" />
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/tarefas">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    public int ID { get; set; }
+
+    [SupplyParameterFromForm]
+    public Tarefas? Tarefas { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        Tarefas ??= await context.Tarefas.FirstOrDefaultAsync(m => m.ID == ID);
+
+        if (Tarefas is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateTarefas()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(Tarefas!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!TarefasExists(Tarefas!.ID))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/tarefas");
+    }
+
+    bool TarefasExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Tarefas.Any(e => e.ID == id);
+    }
+}

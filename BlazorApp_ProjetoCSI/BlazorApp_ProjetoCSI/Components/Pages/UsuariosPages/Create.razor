@@ -1,0 +1,88 @@
+﻿@page "/usuarios/create"
+
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_ProjetoCSI.Models
+@inject IDbContextFactory<BlazorApp_ProjetoCSI.Data.MyBlazorApp_ProjetoCSIContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Cadastro</PageTitle>
+
+<h1>Cadastro</h1>
+
+<h4>Usuarios</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="Usuarios" OnValidSubmit="AddUsuarios" FormName="create">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="login" class="form-label">Login:</label>
+                <InputText id="login" @bind-Value="Usuarios.Login" class="form-control" />
+                <ValidationMessage For="() => Usuarios.Login" class="text-danger" />
+            </div>
+            <div class="mb-3">
+                <label for="senha" class="form-label">Senha:</label>
+                <InputText id="senha" @bind-Value="Usuarios.Senha" type="password" class="form-control" />
+                <ValidationMessage For="() => Usuarios.Senha" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Criar Conta</button>
+
+            <!-- Exibição da Mensagem de Erro -->
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="text-danger mt-3">
+                    @ErrorMessage
+                </div>
+            }
+
+            <!-- Exibição da Mensagem de Sucesso -->
+            @if (!string.IsNullOrEmpty(SuccessMessage))
+            {
+                <div class="text-success mt-3">
+                    @SuccessMessage
+                </div>
+            }
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/usuarios">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public Usuarios Usuarios { get; set; } = new();
+
+    public string? ErrorMessage { get; set; }
+    public string? SuccessMessage { get; set; }
+
+    public async Task AddUsuarios()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        // Verifica se o login já existe
+        var existingUser = await context.Usuarios
+            .FirstOrDefaultAsync(u => u.Login == Usuarios.Login);
+
+        if (existingUser != null)
+        {
+            // Define uma mensagem de erro
+            ErrorMessage = "Erro: Email já foi cadastrado";
+            SuccessMessage = null;
+            return;
+        }
+
+        // Adiciona o novo usuário
+        context.Usuarios.Add(Usuarios);
+        await context.SaveChangesAsync();
+
+        // Define uma mensagem de sucesso
+        SuccessMessage = "Cadastro realizado com sucesso!";
+        ErrorMessage = null;
+
+        // Não redireciona para outra página
+    }
+}

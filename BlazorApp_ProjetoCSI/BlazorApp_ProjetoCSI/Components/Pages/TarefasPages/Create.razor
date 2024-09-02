@@ -1,0 +1,66 @@
+﻿@page "/tarefas/create"
+
+@using Microsoft.EntityFrameworkCore
+@using BlazorApp_ProjetoCSI.Models
+@inject IDbContextFactory<BlazorApp_ProjetoCSI.Data.MyBlazorApp_ProjetoCSIContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>Tarefas</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Tarefas" OnValidSubmit="AddTarefas" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="descricao" class="form-label">Descricao:</label> 
+                <InputText id="descricao" @bind-Value="Tarefas.Descricao" class="form-control" /> 
+                <ValidationMessage For="() => Tarefas.Descricao" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="prioridade" class="form-label">Prioridade:</label> 
+                <InputText id="prioridade" @bind-Value="Tarefas.Prioridade" class="form-control" /> 
+                <ValidationMessage For="() => Tarefas.Prioridade" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="responsavel" class="form-label">Responsavel:</label> 
+                <InputText id="responsavel" @bind-Value="Tarefas.Responsavel" class="form-control" /> 
+                <ValidationMessage For="() => Tarefas.Responsavel" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="datacriacao" class="form-label">DataCriacao:</label> 
+                <InputDate id="datacriacao" @bind-Value="Tarefas.DataCriacao" class="form-control" /> 
+                <ValidationMessage For="() => Tarefas.DataCriacao" class="text-danger" /> 
+            </div>        
+            <div class="mb-3">
+                <label for="prazo" class="form-label">Prazo:</label> 
+                <InputDate id="prazo" @bind-Value="Tarefas.Prazo" class="form-control" /> 
+                <ValidationMessage For="() => Tarefas.Prazo" class="text-danger" /> 
+            </div>        
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/tarefas">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public Tarefas Tarefas { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddTarefas()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Tarefas.Add(Tarefas);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/tarefas");
+    }
+}
